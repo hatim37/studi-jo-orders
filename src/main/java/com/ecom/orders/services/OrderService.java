@@ -18,6 +18,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -102,5 +103,12 @@ public class OrderService {
     public Order findById(Long id) {
         return orderRepository.findById(id).orElse(null);
     }
+
+    public List<OrderDto> getMyPlacedOrders(Long userId) {
+        return orderRepository.findByUserIdAndOrderStatusIn(userId, List.of(OrderStatus.Valider)).stream()
+                .map(Order::getOrderDto).collect(Collectors.toList());
+    }
+
+
 
 }
