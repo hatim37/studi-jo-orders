@@ -29,5 +29,10 @@ public class MicroServiceController {
     public Order findByUserIdAndOrderStatus(@RequestBody Map<String, String> mapOrder){
         return this.orderService.findByUserIdAndOrderStatus(mapOrder);
     }
+
+    @GetMapping("/_internal/orderFindById/{id}")
+    public Order findById(@PathVariable Long id){
+        return this.orderService.findById(id);
+    }
 }
 
