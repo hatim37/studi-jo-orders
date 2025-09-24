@@ -37,7 +37,6 @@ public class TokenTechnicService {
 
         // 3) Appel Feign
         TokenTechnicDto resp = securityRestClient.getTokenTechnic(basicAuth, form);
-        log.info(resp.accessToken());
         // 4) Retourne l’access_token (ou null si fallback)
         return resp == null ? null : resp.accessToken();
     }

@@ -7,8 +7,12 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Data
+@Getter
+@Setter
 public class CartItems {
 
     private Long id;
@@ -16,11 +20,13 @@ public class CartItems {
     private Long quantity;
     @ManyToOne()
     private Product product;
+    private Long productId;
     @Transient
     private User user;
     private Long userId;
     @ManyToOne
     private Order order;
+    private Long orderId;
     @Lob
     @Column(columnDefinition = "longblob")
     private byte[] qrCode;
@@ -38,4 +44,6 @@ public class CartItems {
         cartItemsDto.setQrCode(qrCode);
         return cartItemsDto;
     }
+
+
 }
