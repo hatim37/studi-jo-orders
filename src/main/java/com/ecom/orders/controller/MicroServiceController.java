@@ -3,11 +3,12 @@ package com.ecom.orders.controller;
 import com.ecom.orders.config.UsersOrderInitializer;
 import com.ecom.orders.entity.Order;
 import com.ecom.orders.services.OrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-
+@Slf4j
 @RestController
 public class MicroServiceController {
 
@@ -41,6 +42,7 @@ public class MicroServiceController {
 
     @PostMapping("/_internal/orders/sync")
     public ResponseEntity<Void> synchronizeOrders() {
+        log.info("demande de sync users recu");
         usersOrderInitializer.synchronize();
         return ResponseEntity.ok().build();
     }

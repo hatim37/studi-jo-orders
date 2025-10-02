@@ -10,6 +10,7 @@ import com.ecom.orders.entity.Order;
 import com.ecom.orders.enums.OrderStatus;
 import com.ecom.orders.model.CartItems;
 import com.ecom.orders.repository.OrderRepository;
+import com.ecom.orders.response.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +61,7 @@ public class AdminService {
     }
 
     public AnalyticsResponse calculateAnalytics() {
+        log.info("analytics go");
 
         LocalDate currentDate = LocalDate.now();
         LocalDate previousMonthday = currentDate.minusMonths(1);
@@ -71,6 +73,7 @@ public class AdminService {
         Long previousMonthEarnings = getTotalEarningsForMonth(previousMonthday.getMonthValue(), previousMonthday.getYear());
 
         Long placed = orderRepository.countByOrderStatus(OrderStatus.Valider);
+        log.info("placed: " + placed);
 
         List<ProductAnalyticsDto> productAnalyticsDtos = this.getProductStatsByMonth();
         AnalyticsResponse analyticsResponse = new AnalyticsResponse();
@@ -144,62 +147,68 @@ public class AdminService {
         //Récupérer liste CartItems validés
         List<CartItems> items = cartRestClient.findByQrCodeIsNotNull("Bearer "+this.tokenTechnicService.getTechnicalToken());
 
-        //classer par productId
-        Map<Long, List<CartItems>> itemsByProduct = items.stream()
-                .collect(Collectors.groupingBy(CartItems::getProductId));
+        if (items != null && !items.isEmpty()) {
+            //classer par productId
+            Map<Long, List<CartItems>> itemsByProduct = items.stream()
+                    .collect(Collectors.groupingBy(CartItems::getProductId));
 
-        List<Long> productIds = new ArrayList<>(itemsByProduct.keySet());
-        List<ProductDto> products = productRestClient.findListById(
-                "Bearer " + this.tokenTechnicService.getTechnicalToken(), productIds
-        );
-        Map<Long, ProductDto> productMap = products.stream()
-                .collect(Collectors.toMap(ProductDto::getId, Function.identity()));
+            List<Long> productIds = new ArrayList<>(itemsByProduct.keySet());
 
-        List<ProductAnalyticsDto> statsList = new ArrayList<>();
+            List<ProductDto> products = productRestClient.findListById(
+                    "Bearer " + this.tokenTechnicService.getTechnicalToken(), productIds
+            );
+            Map<Long, ProductDto> productMap = products.stream()
+                    .collect(Collectors.toMap(ProductDto::getId, Function.identity()));
 
-        // Calculer les stats par produit
-        for (Map.Entry<Long, List<CartItems>> entry : itemsByProduct.entrySet()) {
-            Long productId = entry.getKey();
-            List<CartItems> productItems = entry.getValue();
+            List<ProductAnalyticsDto> statsList = new ArrayList<>();
 
-            ProductDto product = productMap.get(productId);
-            if (product == null) continue;
+            // Calculer les stats par produit
+            for (Map.Entry<Long, List<CartItems>> entry : itemsByProduct.entrySet()) {
+                Long productId = entry.getKey();
+                List<CartItems> productItems = entry.getValue();
 
-            ProductAnalyticsDto stats = new ProductAnalyticsDto(product.getName());
+                ProductDto product = productMap.get(productId);
+                if (product == null) continue;
 
-            for (CartItems ci : productItems) {
-                // Récupérer la date
-                Order order = orderRepository.findById(ci.getOrderId()).orElse(null);
-                if (order == null) continue;
+                ProductAnalyticsDto stats = new ProductAnalyticsDto(product.getName());
 
-                LocalDate date = order.getDate().toInstant()
-                        .atZone(ZoneId.systemDefault()).toLocalDate();
+                for (CartItems ci : productItems) {
+                    // Récupérer la date
+                    Order order = orderRepository.findById(ci.getOrderId()).orElse(null);
+                    if (order == null) continue;
 
-                long quantity = ci.getQuantity();
-                long amount = ci.getQuantity() * ci.getPrice();
+                    LocalDate date = order.getDate().toInstant()
+                            .atZone(ZoneId.systemDefault()).toLocalDate();
 
-                // Faire le total
-                stats.setTotalQuantity(stats.getTotalQuantity() + quantity);
-                stats.setTotalAmount(stats.getTotalAmount() + amount);
+                    long quantity = ci.getQuantity();
+                    long amount = ci.getQuantity() * ci.getPrice();
 
-                // Classer par mois en cours
-                if (date.getMonthValue() == currentDate.getMonthValue()
-                        && date.getYear() == currentDate.getYear()) {
-                    stats.setCurrentMonthQuantity(stats.getCurrentMonthQuantity() + quantity);
-                    stats.setCurrentMonthTotal(stats.getCurrentMonthTotal() + amount);
+                    // Faire le total
+                    stats.setTotalQuantity(stats.getTotalQuantity() + quantity);
+                    stats.setTotalAmount(stats.getTotalAmount() + amount);
+
+                    // Classer par mois en cours
+                    if (date.getMonthValue() == currentDate.getMonthValue()
+                            && date.getYear() == currentDate.getYear()) {
+                        stats.setCurrentMonthQuantity(stats.getCurrentMonthQuantity() + quantity);
+                        stats.setCurrentMonthTotal(stats.getCurrentMonthTotal() + amount);
+                    }
+
+                    // Classer par mois précédent
+                    if (date.getMonthValue() == previousMonthDate.getMonthValue()
+                            && date.getYear() == previousMonthDate.getYear()) {
+                        stats.setPreviousMonthQuantity(stats.getPreviousMonthQuantity() + quantity);
+                        stats.setPreviousMonthTotal(stats.getPreviousMonthTotal() + amount);
+                    }
                 }
 
-                // Classer par mois précédent
-                if (date.getMonthValue() == previousMonthDate.getMonthValue()
-                        && date.getYear() == previousMonthDate.getYear()) {
-                    stats.setPreviousMonthQuantity(stats.getPreviousMonthQuantity() + quantity);
-                    stats.setPreviousMonthTotal(stats.getPreviousMonthTotal() + amount);
-                }
+                statsList.add(stats);
             }
-
-            statsList.add(stats);
+            return statsList;
+        }
+        else {
+            throw new UserNotFoundException("Service indisponible");
         }
 
-        return statsList;
     }
 }
