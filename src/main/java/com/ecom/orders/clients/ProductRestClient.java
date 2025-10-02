@@ -1,8 +1,6 @@
 package com.ecom.orders.clients;
 
 import com.ecom.orders.dto.ProductDto;
-import com.ecom.orders.model.Product;
-import com.ecom.orders.model.User;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

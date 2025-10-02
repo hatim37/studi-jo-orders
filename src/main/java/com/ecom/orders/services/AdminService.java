@@ -138,14 +138,13 @@ public class AdminService {
     }
 
     public List<ProductAnalyticsDto> getProductStatsByMonth() {
-        log.info("1");
         LocalDate currentDate = LocalDate.now();
         LocalDate previousMonthDate = currentDate.minusMonths(1);
 
-        //Récupérer tous les CartItems avec qrCode != null
+        //Récupérer liste CartItems validés
         List<CartItems> items = cartRestClient.findByQrCodeIsNotNull("Bearer "+this.tokenTechnicService.getTechnicalToken());
 
-        //Grouper par productId
+        //classer par productId
         Map<Long, List<CartItems>> itemsByProduct = items.stream()
                 .collect(Collectors.groupingBy(CartItems::getProductId));
 
@@ -158,18 +157,18 @@ public class AdminService {
 
         List<ProductAnalyticsDto> statsList = new ArrayList<>();
 
-        // 4️⃣ Calculer les stats par produit
+        // Calculer les stats par produit
         for (Map.Entry<Long, List<CartItems>> entry : itemsByProduct.entrySet()) {
             Long productId = entry.getKey();
             List<CartItems> productItems = entry.getValue();
 
             ProductDto product = productMap.get(productId);
-            if (product == null) continue; // sécurité si produit introuvable
+            if (product == null) continue;
 
             ProductAnalyticsDto stats = new ProductAnalyticsDto(product.getName());
 
             for (CartItems ci : productItems) {
-                // Récupérer la date de la commande
+                // Récupérer la date
                 Order order = orderRepository.findById(ci.getOrderId()).orElse(null);
                 if (order == null) continue;
 
@@ -179,18 +178,18 @@ public class AdminService {
                 long quantity = ci.getQuantity();
                 long amount = ci.getQuantity() * ci.getPrice();
 
-                // Totaux
+                // Faire le total
                 stats.setTotalQuantity(stats.getTotalQuantity() + quantity);
                 stats.setTotalAmount(stats.getTotalAmount() + amount);
 
-                // Mois en cours
+                // Classer par mois en cours
                 if (date.getMonthValue() == currentDate.getMonthValue()
                         && date.getYear() == currentDate.getYear()) {
                     stats.setCurrentMonthQuantity(stats.getCurrentMonthQuantity() + quantity);
                     stats.setCurrentMonthTotal(stats.getCurrentMonthTotal() + amount);
                 }
 
-                // Mois précédent
+                // Classer par mois précédent
                 if (date.getMonthValue() == previousMonthDate.getMonthValue()
                         && date.getYear() == previousMonthDate.getYear()) {
                     stats.setPreviousMonthQuantity(stats.getPreviousMonthQuantity() + quantity);
