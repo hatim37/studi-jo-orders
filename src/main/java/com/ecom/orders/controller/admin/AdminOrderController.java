@@ -20,7 +20,7 @@ public class AdminOrderController {
 
     private final AdminService adminService;
 
-    public AdminOrderController(OrderService orderService, AdminService adminService) {this.adminService = adminService;}
+    public AdminOrderController(AdminService adminService) {this.adminService = adminService;}
 
     @GetMapping("/placedOrders")
     public ResponseEntity<List<OrderDto>> getAllPlacedOrders(){
