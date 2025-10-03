@@ -58,7 +58,9 @@ public class OrderService {
 
     public Order findByUserIdAndOrderStatus(Map<String, String> mapOrder) {
         Long userId = Long.valueOf(mapOrder.get("userId"));
-        return orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.EnCours);
+        Order order = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.EnCours);
+        log.info("Order found: {}", order.getUserId());
+        return order;
     }
 
 
