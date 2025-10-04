@@ -59,11 +59,10 @@ public class OrderService {
     public Order findByUserIdAndOrderStatus(Map<String, String> mapOrder) {
         Long userId = Long.valueOf(mapOrder.get("userId"));
         Order order = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.EnCours);
-        log.info("Order found: {}", order.getUserId());
         return order;
     }
 
-
+    @Transactional
     public OrderDto placeOrder(PlaceOrderDto placeOrderDto) throws NoSuchAlgorithmException {
 
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.EnCours);
@@ -76,6 +75,7 @@ public class OrderService {
             activeOrder.setSecretKey(this.generateAndEncryptKeyForDB());
 
             orderRepository.save(activeOrder);
+
             ResponseEntity<Void> resp = this.cartRestClient.generateQrCde("Bearer "+this.tokenTechnicService.getTechnicalToken(),Map.of("userId", placeOrderDto.getUserId(), "orderId", activeOrder.getId()));
             if (resp.getStatusCode().is2xxSuccessful()) {
                 Order newOrder = new Order();
@@ -98,7 +98,7 @@ public class OrderService {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);
         SecretKey secretKey = keyGen.generateKey();
-        // Encode en Base64 pour stockage en BDD
+        // Encode en Base64
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
