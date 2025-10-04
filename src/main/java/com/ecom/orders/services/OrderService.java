@@ -62,7 +62,7 @@ public class OrderService {
         return order;
     }
 
-    @Transactional
+
     public OrderDto placeOrder(PlaceOrderDto placeOrderDto) throws NoSuchAlgorithmException {
 
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.EnCours);
