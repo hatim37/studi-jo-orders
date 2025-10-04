@@ -7,6 +7,7 @@ import com.ecom.orders.services.AdminService;
 import com.ecom.orders.services.OrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,11 +24,13 @@ public class AdminOrderController {
     public AdminOrderController(AdminService adminService) {this.adminService = adminService;}
 
     @GetMapping("/placedOrders")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ResponseEntity<List<OrderDto>> getAllPlacedOrders(){
         return ResponseEntity.ok(adminService.getAllPlacedOrders());
     }
 
     @GetMapping("/order/analytics")
+    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     public ResponseEntity<AnalyticsResponse> getAnalyticsResponse(){
         return ResponseEntity.ok(adminService.calculateAnalytics());
     }

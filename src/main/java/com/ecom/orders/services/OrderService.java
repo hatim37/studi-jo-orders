@@ -20,7 +20,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class OrderService {
 
@@ -38,7 +37,7 @@ public class OrderService {
 
     @Transactional
     public void updateOrderTotal(Order order) {
-        Order setOrder = orderRepository.findById(order.getId()).orElseThrow(()->new UserNotFoundException("echec"));
+        Order setOrder = orderRepository.findById(order.getId()).orElseThrow(()->new UserNotFoundException("service indisponible"));
 
         setOrder.setAmount(order.getAmount());
         setOrder.setUserId(order.getUserId());

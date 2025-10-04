@@ -147,7 +147,6 @@ public class AdminService {
         //Récupérer liste CartItems validés
         List<CartItems> items = cartRestClient.findByQrCodeIsNotNull("Bearer "+this.tokenTechnicService.getTechnicalToken());
 
-        //if (items != null && !items.isEmpty()) {
             //classer par productId
             Map<Long, List<CartItems>> itemsByProduct = items.stream()
                     .collect(Collectors.groupingBy(CartItems::getProductId));
@@ -205,10 +204,5 @@ public class AdminService {
                 statsList.add(stats);
             }
             return statsList;
-        //}
-        //else {
-            //throw new UserNotFoundException("Service indisponible");
-        //}
-
     }
 }
