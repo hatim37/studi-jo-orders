@@ -32,7 +32,6 @@ public class MicroServiceController {
 
     @PostMapping("/_internal/orderFindUserOrderStatus")
     public Order findByUserIdAndOrderStatus(@RequestBody Map<String, String> mapOrder){
-        log.info("Find user order status");
         return this.orderService.findByUserIdAndOrderStatus(mapOrder);
     }
 

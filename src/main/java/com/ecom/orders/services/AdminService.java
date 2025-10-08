@@ -61,7 +61,6 @@ public class AdminService {
     }
 
     public AnalyticsResponse calculateAnalytics() {
-        log.info("analytics go");
 
         LocalDate currentDate = LocalDate.now();
         LocalDate previousMonthday = currentDate.minusMonths(1);
@@ -73,7 +72,6 @@ public class AdminService {
         Long previousMonthEarnings = getTotalEarningsForMonth(previousMonthday.getMonthValue(), previousMonthday.getYear());
 
         Long placed = orderRepository.countByOrderStatus(OrderStatus.Valider);
-        log.info("placed: " + placed);
 
         List<ProductAnalyticsDto> productAnalyticsDtos = this.getProductStatsByMonth();
         AnalyticsResponse analyticsResponse = new AnalyticsResponse();
