@@ -87,7 +87,7 @@ public class AdminService {
 
     }
 
-    private Long getTotalEarningsForMonth(int month, int year) {
+    public Long getTotalEarningsForMonth(int month, int year) {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month - 1);
